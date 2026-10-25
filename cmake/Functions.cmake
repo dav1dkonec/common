@@ -349,10 +349,8 @@ ELSE()
 ENDIF()
 
 # Makes every consumer of an imported shared library able to locate it at run time.
-# On macOS and GNU/Linux the loader resolves a shared library by the install name/SONAME baked
-# into it, which is typically relative to @rpath/$ORIGIN. Since these libraries live outside our
-# output directory, the linked target needs an explicit rpath entry pointing at them; imported
-# targets propagate it to their consumers through INTERFACE_LINK_OPTIONS.
+# These libraries live outside our output directory, so the linked target needs an explicit
+# rpath entry; INTERFACE_LINK_OPTIONS propagates it from the imported target to its consumers.
 FUNCTION(PROPAGATE_IMPORTED_LIBRARY_RPATH LIBNAME LIBPATH ISSTATIC)
 	IF(${ISSTATIC} OR WIN32)
 		RETURN()
