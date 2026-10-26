@@ -17,6 +17,11 @@ namespace solver
         const std::string controller_address;
         const size_t expected_worker_count;
 
+        // Where the registry keeps shared libraries. Leave empty to use its default; set it
+        // when the libraries live in a directory the registry must not overwrite, such as a
+        // build output directory.
+        const std::string local_cache_dir;
+
         // Original data that'd be normally contained inside TSolver_Setup
         const void *solverData;
     };
