@@ -162,6 +162,9 @@ namespace scgms {
 
 			/* Saves configuration to file; file_path cannot be nullptr if the config was constructed in-memory only, otherwise return E_ILLEGAL_METHOD_CALL*/
 			virtual HRESULT IfaceCalling Save_To_File(const wchar_t *file_path, refcnt::wstr_list* error_description) = 0;
+
+			/* Saves configuration into a newly allocated container, which the caller releases; the counterpart of Load_From_Memory */
+			virtual HRESULT IfaceCalling Save_To_Memory(refcnt::str_container** memory, refcnt::wstr_list* error_description) = 0;
 	};	
 
 	/* filter interface */
