@@ -76,6 +76,42 @@ namespace solver {
 	 * returns TRUE (success) or FALSE (there was an error) */
 	using TObjective_Function = BOOL(IfaceCalling*)(const void *data, const size_t count, const double *solution, double * const fitness);
 
+	/* One event the optimizing body has to replay; the flat counterpart of scgms::TDevice_Event,
+	 * so that it can be handed to a solver that evaluates the problem in another process */
+	struct TOptimizing_Event {
+		uint32_t event_code;
+		GUID device_id;
+		GUID signal_id;
+		double device_time;
+		uint64_t segment_id;
+		/* valid for level events */
+		double level;
+		/* valid for parameter events, nullptr otherwise */
+		const double* parameters;
+		size_t parameter_count;
+	};
+
+	/* Tells where one optimized parameter lives, both in the chain and in the candidate vector */
+	struct TOptimizing_Parameter {
+		/* index of the filter within the optimizing body, not within the whole chain */
+		size_t filter_index;
+		const wchar_t* config_name;
+		/* offset of this filter's slice within the candidate solution, and its length */
+		size_t offset;
+		size_t count;
+	};
+
+	/* Everything a solver needs to evaluate the objective on its own, without calling back into
+	 * this process. body_ini is the optimizing part of the filter chain rendered as ini content. */
+	struct TOptimizing_Problem {
+		const char* body_ini;
+		size_t body_ini_len;
+		const TOptimizing_Event* events;
+		size_t event_count;
+		const TOptimizing_Parameter* parameters;
+		size_t parameter_count;
+	};
+
 	/* solver setup container */
 	struct TSolver_Setup {
 		/* size of the problem, e.g., number of parameters */
@@ -106,9 +142,13 @@ namespace solver {
 		const size_t population_size;
 		/* tolerance indicating no further improvement between steps (where relevant) */
 		const double tolerance;
+
+		/* optional description of the problem for a solver that evaluates it elsewhere;
+		 * nullptr means the solver must call objective() in this process, as it always did */
+		const TOptimizing_Problem* optimizing_problem;
 	};
 
-	const TSolver_Setup Default_Solver_Setup = { 0, 0, nullptr, nullptr, nullptr, 0, nullptr, nullptr, nullptr, nullptr, 0, 0, std::numeric_limits<double>::min() };
+	const TSolver_Setup Default_Solver_Setup = { 0, 0, nullptr, nullptr, nullptr, 0, nullptr, nullptr, nullptr, nullptr, 0, 0, std::numeric_limits<double>::min(), nullptr };
 	using TGeneric_Solver = HRESULT(IfaceCalling*)(const GUID *solver_id, const TSolver_Setup *setup, TSolver_Progress *progress);
 }
 
