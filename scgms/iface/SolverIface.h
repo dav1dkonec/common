@@ -76,8 +76,8 @@ namespace solver {
 	 * returns TRUE (success) or FALSE (there was an error) */
 	using TObjective_Function = BOOL(IfaceCalling*)(const void *data, const size_t count, const double *solution, double * const fitness);
 
-	/* One event the optimizing body has to replay; the flat counterpart of scgms::TDevice_Event,
-	 * so that it can be handed to a solver that evaluates the problem in another process */
+	/* Flat, pointer-free form of scgms::TDevice_Event, suitable for a solver that evaluates the
+	 * problem outside this process. Info events are not replayed and are not representable here. */
 	struct TOptimizing_Event {
 		uint32_t event_code;
 		GUID device_id;
@@ -91,7 +91,7 @@ namespace solver {
 		size_t parameter_count;
 	};
 
-	/* Tells where one optimized parameter lives, both in the chain and in the candidate vector */
+	/* Location of one optimized parameter within the optimizing body and the candidate vector */
 	struct TOptimizing_Parameter {
 		/* index of the filter within the optimizing body, not within the whole chain */
 		size_t filter_index;
@@ -101,8 +101,9 @@ namespace solver {
 		size_t count;
 	};
 
-	/* Everything a solver needs to evaluate the objective on its own, without calling back into
-	 * this process. body_ini is the optimizing part of the filter chain rendered as ini content. */
+	/* Problem description for a solver that evaluates the objective without calling back into this
+	 * process. body_ini holds the optimizing part of the filter chain as ini content; events are
+	 * replayed through it once per candidate. All buffers are owned by the caller. */
 	struct TOptimizing_Problem {
 		const char* body_ini;
 		size_t body_ini_len;
@@ -143,8 +144,7 @@ namespace solver {
 		/* tolerance indicating no further improvement between steps (where relevant) */
 		const double tolerance;
 
-		/* optional description of the problem for a solver that evaluates it elsewhere;
-		 * nullptr means the solver must call objective() in this process, as it always did */
+		/* optional; nullptr requires the solver to evaluate through objective() in this process */
 		const TOptimizing_Problem* optimizing_problem;
 	};
 
