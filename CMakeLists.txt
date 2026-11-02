@@ -67,9 +67,7 @@ ENDIF()
 
 ADD_LIBRARY(${PROJ} STATIC ${iface} ${lang} ${rtl} ${utils})
 
-# The archive is linked into shared modules, such as the UDP libraries of
-# core/distributed4scgms. ELF targets accept that only for position-independent objects;
-# Mach-O has no such restriction, so without this the build fails only on Linux.
+# The archive is also linked into shared modules, which ELF allows only for PIC objects.
 SET_TARGET_PROPERTIES(${PROJ} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 APPLY_SCGMS_LIBRARY_BUILD_SETTINGS(${PROJ})
 CONFIGURE_BASE_LIB_OUTPUT(${PROJ})
